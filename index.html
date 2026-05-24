@@ -124,9 +124,9 @@ const UPS_CATALOG = {
   "Powerware":["9120","9130","9140","9150","9155","9170+","9315"],
   "Ever":["ECO Pro","Sinline RT XL","Powerline RT","Forte","Ecoline"],
 };
-const BATTERY_BRANDS=["YUASA","CSB","Fiamm","Vision","Leoch","Sonnenschein","EnerSys","Banner","Panasonic","Coslight","Altra"];
+const BATTERY_BRANDS=["YUASA","CSB","Fiamm","Vision","Enerpower","Elsypower","Energy Safe","Leoch","Sonnenschein","EnerSys","Banner","Panasonic","Coslight","Altra"];
 const CONFIGS=["1F in / 1F out","3F in / 1F out","3F in / 3F out","1F in / 3F out"];
-const TOPOLOGIE=["Online doppia conversione","Line-interactive","Standby / Off-line","Delta conversion"];
+const TOPOLOGIE=["Online","Line-interactive","Standby / Off-line","Delta conversion"];
 const SK="ups_v3";
 
 function load(){try{const r=localStorage.getItem(SK);return r?JSON.parse(r):{clients:[],customBrands:{}}}catch{return{clients:[],customBrands:{}}}}
