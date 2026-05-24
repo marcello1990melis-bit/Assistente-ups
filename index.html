@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<!-- UPS Assistant v2 -->
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>UPS Assistant v2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1117;color:#e2e8f0;font-family:'IBM Plex Mono','Courier New',monospace;min-height:100vh}
+input,select,textarea,button{font-family:inherit}
+select option{background:#0f1117;color:#e2e8f0}
+.header{background:#161b27;border-bottom:1px solid #1e293b;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.logo-title{font-size:13px;font-weight:700;color:#f8fafc;letter-spacing:.08em}
+.logo-sub{font-size:10px;color:#64748b}
+.nav-btn{padding:7px 13px;border-radius:6px;border:1px solid #1e293b;background:transparent;color:#64748b;font-size:11px;cursor:pointer}
+.nav-btn.accent{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#f59e0b}
+.body{padding:16px;max-width:500px;margin:0 auto}
+.section{background:#161b27;border:1px solid #1e293b;border-radius:10px;padding:16px;margin-bottom:12px}
+.sec-title{font-size:10px;color:#f59e0b;letter-spacing:.15em;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;color:#64748b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.field input,.field select,.field textarea{display:block;width:100%;background:#0f1117;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;color:#e2e8f0;font-size:14px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#f59e0b}
+.field textarea{resize:vertical;min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calc-box{background:#0f1117;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;font-size:14px;color:#f59e0b}
+.calc-note{font-size:11px;color:#64748b;margin-left:8px}
+.split-toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:#0f1117;border:1px solid #1e293b;border-radius:6px;cursor:pointer;user-select:none}
+.split-toggle input[type=checkbox]{width:16px;height:16px;accent-color:#f59e0b;cursor:pointer;flex-shrink:0}
+.split-toggle span{font-size:12px;color:#94a3b8}
+.save-btn{display:block;width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;border-radius:8px;padding:14px;font-size:13px;font-weight:700;letter-spacing:.08em;cursor:pointer}
+.inline-box{background:#0f1117;border:1px dashed #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px}
+.inline-box label{display:block;font-size:10px;color:#64748b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.inline-box input{display:block;width:100%;background:#161b27;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:8px}
+.inline-btns{display:flex;gap:8px}
+.inline-btns button{flex:1;padding:9px;border-radius:6px;font-size:11px;cursor:pointer}
+.inline-btns .confirm{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;font-weight:700}
+.inline-btns .cancel{background:transparent;border:1px solid #1e293b;color:#64748b}
+.search-wrap{background:#161b27;border:1px solid #1e293b;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.search-wrap input{flex:1;background:none;border:none;outline:none;color:#e2e8f0;font-size:14px;min-width:0}
+.search-clear{color:#64748b;cursor:pointer;font-size:18px;flex-shrink:0}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:8px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#64748b;font-size:11px;cursor:pointer;text-align:center}
+.tab.active{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#f59e0b;font-weight:700}
+.alert-banner{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#fca5a5}
+.alert-banner.warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.client-card{background:#161b27;border:1px solid #1e293b;border-radius:10px;margin-bottom:12px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.client-card:hover{border-color:#f59e0b}
+.card-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.card-name{font-size:14px;font-weight:700;color:#f8fafc}
+.card-loc{font-size:11px;color:#64748b;margin-top:2px}
+.badge{border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;white-space:nowrap;border:1px solid}
+.ups-row{padding:9px 14px;border-top:1px solid #1e293b}
+.ups-row-name{font-size:12px;color:#94a3b8;font-weight:600}
+.ups-row-info{font-size:10px;margin-top:3px}
+.detail-head{padding:12px 14px;background:rgba(245,158,11,.08);border-bottom:1px solid #1e293b;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.detail-head-name{font-size:15px;font-weight:700;color:#f59e0b}
+.detail-head-sub{font-size:11px;color:#64748b;margin-top:2px}
+.detail-actions{display:flex;gap:6px;flex-shrink:0}
+.edit-btn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:5px;padding:4px 10px;color:#f59e0b;font-size:10px;cursor:pointer}
+.delete-btn{background:transparent;border:1px solid rgba(239,68,68,.3);border-radius:5px;padding:4px 10px;color:#ef4444;font-size:10px;cursor:pointer}
+.detail-sec{border-top:1px solid #1e293b;padding:12px 14px}
+.detail-sec-title{font-size:10px;color:#f59e0b;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.detail-item{margin-bottom:8px}
+.detail-label{font-size:10px;color:#64748b;letter-spacing:.08em;text-transform:uppercase}
+.detail-value{font-size:13px;color:#e2e8f0;font-weight:600;margin-top:1px}
+.detail-value.accent{color:#f59e0b}
+.notes-box{margin:0 14px 14px;background:#0f1117;border-radius:6px;padding:10px;font-size:12px;color:#94a3b8;border-left:3px solid #f59e0b;line-height:1.6}
+.added-at{padding:6px 14px 10px;font-size:10px;color:#334155}
+.back-btn{font-size:11px;color:#f59e0b;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:5px}
+.io-row{display:flex;gap:8px;margin-bottom:12px}
+.io-btn{flex:1;padding:10px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;letter-spacing:.05em;border:1px solid}
+.io-btn.export{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#22c55e}
+.io-btn.import{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60a5fa}
+.add-ups-btn{display:block;width:100%;background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px;font-size:12px;cursor:pointer;margin-top:4px}
+.empty{text-align:center;padding:50px 20px;color:#334155}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:8px;font-size:13px;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.ok{background:#14532d;border:1px solid #22c55e;color:#f8fafc}
+.toast.err{background:#7f1d1d;border:1px solid #ef4444;color:#f8fafc}
+.fab{position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 4px 18px rgba(245,158,11,.4);display:flex;align-items:center;justify-content:center;z-index:50}
+.spacer{height:70px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const UPS_CATALOG={"Eaton":["5P","5PX","9PX","9SX","9E","EX RT","Ellipse ECO","3S","5E","Pulsar M","EPE","93PM","93E","BladeUPS"],"APC / Schneider":["Smart-UPS 750","Smart-UPS 1000","Smart-UPS 1500","Smart-UPS 2200","Smart-UPS 3000","Smart-UPS RT","Symmetra LX","Symmetra PX","Galaxy 3500","Galaxy 5500","Easy UPS"],"Riello":["iDialog","Dialog Vision","Dialog+","Mistral","Sentinel Dual","Sentinel Pro","UPower","Master HP","Master MHT","Megaline","Multi Sentry"],"Vertiv":["Liebert GXT4","Liebert GXT5","Liebert PSI5","Liebert ITA2","Liebert EXL S1","Liebert APM","Liebert NXC","Liebert NXL","Liebert EXM2"],"Socomec":["NETYS PR","NETYS RT","ITYS E","ITYS R","DIGYS","DELPHYS GP","DELPHYS MX","MODULYS GP","MASTERYS GP4"],"Legrand":["Keor SP","Keor LP","Keor S","Keor T","Keor Multiplug","Daker DK","Niky S","Megaline"],"Salicru":["SLC ADVANCE","SLC CUBE3+","SPS.ONE","SPS SOHO","EQX","SLC X-PERT"],"CyberPower":["PR750ELCD","PR1000ELCD","PR1500ELCD","PR2200ELCD","OR600ERM1U","OL1000ERT2U","OL2000ERT2U"],"Powerware":["9120","9130","9140","9150","9155","9170+","9315"],"Ever":["ECO Pro","Sinline RT XL","Powerline RT","Forte","Ecoline"]};
+const BATTERY_BRANDS=["YUASA","CSB","Fiamm","Vision","Leoch","Sonnenschein","EnerSys","Banner","Panasonic","Coslight","Altra"];
+const CONFIGS=["1F in / 1F out","3F in / 1F out","3F in / 3F out","1F in / 3F out"];
+const TOPOLOGIE=["Online doppia conversione","Line-interactive","Standby / Off-line","Delta conversion"];
+const FREQ_OPTIONS=["Nessuno","3 mesi","4 mesi","6 mesi","12 mesi"];
+const SK="ups_v3";
+function load(){try{const r=localStorage.getItem(SK);return r?JSON.parse(r):{clients:[],customBrands:{}}}catch{return{clients:[],customBrands:{}}}}
+function save(d){try{localStorage.setItem(SK,JSON.stringify(d))}catch{}}
+let DB=load(),view="search",activeClientId=null,editingUpsId=null,searchStr="",activeTab="clienti";
+let form=ef(),addingBrand=false,addingModel=false;
+function ef(){return{clientName:"",location:"",brand:"",newBrand:"",model:"",newModel:"",power:"",topology:"",configIO:"",serial:"",yearMfg:"",voltageIn:"",voltageOut:"",battBrand:"",battModel:"",battVoltage:"",battAh:"",battElements:"",battStrings:"",battInstallDate:"",battSplit:false,maintFreq:"Nessuno",maintLastDate:"",maintNotes:"",notes:""};}
+function ffu(ups){return{clientName:"",location:"",brand:ups.brand||"",newBrand:"",model:ups.model||"",newModel:"",power:ups.power||"",topology:ups.topology||"",configIO:ups.configIO||"",serial:ups.serial||"",yearMfg:ups.yearMfg||"",voltageIn:ups.voltageIn||"",voltageOut:ups.voltageOut||"",battBrand:ups.battery?.brand||"",battModel:ups.battery?.model||"",battVoltage:ups.battery?.voltage||"",battAh:ups.battery?.ah||"",battElements:ups.battery?.elements||"",battStrings:ups.battery?.strings||"",battInstallDate:ups.battery?.installDate||"",battSplit:ups.battery?.split||false,maintFreq:ups.maint?.freq||"Nessuno",maintLastDate:ups.maint?.lastDate||"",maintNotes:ups.maint?.notes||"",notes:ups.notes||""};}
+function ab(){return[...Object.keys(UPS_CATALOG),...Object.keys(DB.customBrands||{})].sort()}
+function mf(b){return[...(UPS_CATALOG[b]||[]),...((DB.customBrands||{})[b]||[])]}
+function tv(){const v=parseFloat(form.battVoltage),n=parseInt(form.battElements);if(!isNaN(v)&&!isNaN(n)&&n>0){const t=v*n;return form.battSplit?`${t/2}V + ${t/2}V (con neutro)`:`${t}V`;}return"—";}
+function pd(s){if(!s)return null;const p=s.split("/");if(p.length!==3)return null;const d=new Date(`${p[2]}-${p[1]}-${p[0]}`);return isNaN(d)?null:d;}
+function ba(d){const i=pd(d);if(!i)return null;const m=Math.floor((Date.now()-i)/(1000*60*60*24*30));if(m>48)return{label:`${m}m ⚠️ SCADUTA`,color:"#ef4444"};if(m>36)return{label:`${m}m 🔶 In scadenza`,color:"#f59e0b"};return{label:`${m}m ✅`,color:"#22c55e"};}
+function fm(f){if(f==="3 mesi")return 3;if(f==="4 mesi")return 4;if(f==="6 mesi")return 6;if(f==="12 mesi")return 12;return null;}
+function ms(ups){const f=fm(ups.maint?.freq);if(!f||!ups.maint?.lastDate)return null;const l=pd(ups.maint.lastDate);if(!l)return null;const nx=new Date(l);nx.setMonth(nx.getMonth()+f);const dl=Math.floor((nx-Date.now())/(1000*60*60*24));const ns=nx.toLocaleDateString("it-IT");if(dl<0)return{label:`SCADUTA da ${-dl}gg`,color:"#ef4444",next:ns,daysLeft:dl,urgent:true};if(dl<=30)return{label:`Scade in ${dl}gg`,color:"#f59e0b",next:ns,daysLeft:dl,urgent:true};return{label:`Prossima: ${ns}`,color:"#22c55e",next:ns,daysLeft:dl,urgent:false};}
+function au(){const list=[];DB.clients.forEach(c=>{c.ups.forEach(u=>{const s=ms(u),b=ba(u.battery?.installDate);if(s?.urgent)list.push({clientName:c.name,upsName:`${u.brand} ${u.model}`,type:"maint",label:s.label,color:s.color,daysLeft:s.daysLeft,clientId:c.id});if(b&&(b.color==="#ef4444"||b.color==="#f59e0b"))list.push({clientName:c.name,upsName:`${u.brand} ${u.model}`,type:"batt",label:`Batterie: ${b.label}`,color:b.color,clientId:c.id,daysLeft:999});});});list.sort((a,b)=>(a.daysLeft??999)-(b.daysLeft??999));return list;}
+let tt=null;
+function toast(msg,type="ok"){clearTimeout(tt);const o=document.querySelector(".toast");if(o)o.remove();const t=document.createElement("div");t.className=`toast ${type}`;t.textContent=msg;document.body.appendChild(t);tt=setTimeout(()=>t.remove(),2800);}
+function render(){document.getElementById("app").innerHTML=view==="add"||view==="edit"?rForm():view==="detail"?rDetail():rSearch();bind();}
+function logo(sub){return`<div class="logo-wrap"><div class="logo-icon">⚡</div><div><div class="logo-title">UPS ASSISTANT</div><div class="logo-sub">${sub}</div></div></div>`;}
+function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+function rSearch(){
+  const urgent=au();
+  const filtered=DB.clients.filter(c=>c.name.toLowerCase().includes(searchStr.toLowerCase())||(c.location||"").toLowerCase().includes(searchStr.toLowerCase()));
+  let content="";
+  if(activeTab==="scadenze"){
+    if(urgent.length===0){content=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">✅</div><div style="font-size:13px">Nessuna scadenza urgente</div><div style="font-size:11px;margin-top:4px">Tutto sotto controllo</div></div>`;}
+    else urgent.forEach(u=>{content+=`<div class="client-card" data-id="${u.clientId}"><div class="card-head"><div><div class="card-name">${esc(u.clientName)}</div><div style="font-size:12px;color:#94a3b8;margin-top:2px">${esc(u.upsName)}</div></div><span class="badge" style="color:${u.color};border-color:${u.color}40;background:${u.color}15">${u.type==="maint"?"🔧":"🔋"}</span></div><div class="ups-row"><div class="ups-row-info" style="color:${u.color};font-weight:600">${esc(u.label)}</div></div></div>`;});
+  } else {
+    const cc=urgent.filter(u=>u.color==="#ef4444").length,wc=urgent.filter(u=>u.color==="#f59e0b").length;
+    if(cc>0)content+=`<div class="alert-banner">🔴 ${cc} scadenza${cc>1?"e":""} critica${cc>1?"e":""} — vai su "Scadenze"</div>`;
+    else if(wc>0)content+=`<div class="alert-banner warn">🟡 ${wc} scadenza${wc>1?"e":""} in arrivo — vai su "Scadenze"</div>`;
+    content+=`<div class="io-row"><button class="io-btn export" id="btn-export">⬇️ Esporta dati</button><button class="io-btn import" id="btn-import">⬆️ Importa dati</button></div><input type="file" id="import-input" accept=".json" style="display:none"/>`;
+    if(filtered.length===0){content+=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">⚡</div><div style="font-size:13px">${DB.clients.length===0?"Nessun impianto registrato":"Nessun risultato"}</div><div style="font-size:11px;margin-top:4px">${DB.clients.length===0?"Premi + Nuovo per iniziare":"Prova con un altro nome"}</div></div>`;}
+    else filtered.forEach(c=>{
+      let rows="";
+      c.ups.forEach(u=>{const s=ms(u),b=ba(u.battery?.installDate);let info="";if(s)info+=`<span style="color:${s.color}">🔧 ${s.label}</span> `;if(b)info+=`<span style="color:${b.color}">🔋 ${b.label}</span>`;rows+=`<div class="ups-row"><div class="ups-row-name">${esc(u.brand)} ${esc(u.model)}${u.power?` · ${u.power}kVA`:""}</div>${info?`<div class="ups-row-info">${info}</div>`:""}</div>`;});
+      content+=`<div class="client-card" data-id="${c.id}"><div class="card-head"><div><div class="card-name">${esc(c.name)}</div>${c.location?`<div class="card-loc">📍 ${esc(c.location)}</div>`:""}</div><span class="badge" style="color:#64748b;border-color:#334155;background:rgba(100,116,139,.15)">${c.ups.length} UPS</span></div>${rows}</div>`;
+    });
+  }
+  return`<div class="header">${logo("Field Manager v2")}<button class="nav-btn accent" id="btn-new">+ Nuovo</button></div>
+  <div class="body">
+    <div class="tabs"><button class="tab${activeTab==="clienti"?" active":""}" data-tab="clienti">👤 Clienti</button><button class="tab${activeTab==="scadenze"?" active":""}" data-tab="scadenze">🔔 Scadenze${urgent.length>0?` (${urgent.length})`:""}</button></div>
+    ${activeTab==="clienti"?`<div class="search-wrap"><span style="color:#64748b">🔍</span><input id="search-input" placeholder="Cerca cliente o indirizzo..." value="${esc(searchStr)}" autocomplete="off"/>${searchStr?`<span class="search-clear" id="search-clear">×</span>`:""}</div>`:""}
+    ${content}<div class="spacer"></div>
+  </div><button class="fab" id="fab-new">+</button>`;
+}
+
+function rForm(){
+  const isEdit=view==="edit";
+  const models=mf(form.brand);
+  const bo=ab().map(b=>`<option value="${esc(b)}"${form.brand===b?" selected":""}>${esc(b)}</option>`).join("");
+  const mo=models.map(m=>`<option value="${esc(m)}"${form.model===m?" selected":""}>${esc(m)}</option>`).join("");
+  const bbo=BATTERY_BRANDS.map(b=>`<option value="${esc(b)}"${form.battBrand===b?" selected":""}>${esc(b)}</option>`).join("");
+  const to=TOPOLOGIE.map(t=>`<option value="${esc(t)}"${form.topology===t?" selected":""}>${esc(t)}</option>`).join("");
+  const co=CONFIGS.map(c=>`<option value="${esc(c)}"${form.configIO===c?" selected":""}>${esc(c)}</option>`).join("");
+  const fo=FREQ_OPTIONS.map(f=>`<option value="${esc(f)}"${form.maintFreq===f?" selected":""}>${esc(f)}</option>`).join("");
+  return`<div class="header">${logo(isEdit?"Modifica UPS":"Nuovo impianto")}<button class="nav-btn" id="btn-cancel">← Annulla</button></div>
+  <div class="body">
+    ${!isEdit?`<div class="section"><div class="sec-title">👤 Cliente</div><div class="field"><label>Nome cliente *</label><input id="f-clientName" value="${esc(form.clientName)}" placeholder="es. Rossi Srl"/></div><div class="field"><label>Sede / Indirizzo</label><input id="f-location" value="${esc(form.location)}" placeholder="es. Via Roma 5, Milano"/></div></div>`:""}
+    <div class="section"><div class="sec-title">⚡ Dati UPS</div>
+      <div class="field"><label>Marca *</label><select id="f-brand"><option value="">— Seleziona marca —</option>${bo}<option value="__add__">➕ Aggiungi nuova marca...</option></select></div>
+      ${addingBrand?`<div class="inline-box"><label>Nome nuova marca</label><input id="f-newBrand" value="${esc(form.newBrand)}" placeholder="es. Socomec"/><div class="inline-btns"><button class="confirm" id="btn-saveBrand">Aggiungi</button><button class="cancel" id="btn-cancelBrand">Annulla</button></div></div>`:""}
+      <div class="field"><label>Modello *</label><select id="f-model" ${!form.brand?"disabled":""}><option value="">${form.brand?"— Seleziona modello —":"— Prima seleziona marca —"}</option>${mo}${form.brand?`<option value="__add__">➕ Aggiungi nuovo modello...</option>`:""}</select></div>
+      ${addingModel?`<div class="inline-box"><label>Nome nuovo modello</label><input id="f-newModel" value="${esc(form.newModel)}" placeholder="es. 9PX 3000i RT2U"/><div class="inline-btns"><button class="confirm" id="btn-saveModel">Aggiungi</button><button class="cancel" id="btn-cancelModel">Annulla</button></div></div>`:""}
+      <div class="row2"><div class="field"><label>Potenza (kVA)</label><input id="f-power" type="number" value="${esc(form.power)}" placeholder="3"/></div><div class="field"><label>Anno fabbrica</label><input id="f-yearMfg" type="number" value="${esc(form.yearMfg)}" placeholder="2021"/></div></div>
+      <div class="field"><label>N° Seriale</label><input id="f-serial" value="${esc(form.serial)}" placeholder="es. G123456789"/></div>
+      <div class="field"><label>Topologia</label><select id="f-topology"><option value="">—</option>${to}</select></div>
+      <div class="field"><label>Configurazione ingresso / uscita</label><select id="f-configIO"><option value="">—</option>${co}</select></div>
+      <div class="row2"><div class="field"><label>Tensione in (V)</label><input id="f-voltageIn" type="number" value="${esc(form.voltageIn)}" placeholder="230"/></div><div class="field"><label>Tensione out (V)</label><input id="f-voltageOut" type="number" value="${esc(form.voltageOut)}" placeholder="230"/></div></div>
+    </div>
+    <div class="section"><div class="sec-title">🔋 Batterie</div>
+      <div class="field"><label>Marca batteria</label><select id="f-battBrand"><option value="">—</option>${bbo}</select></div>
+      <div class="field"><label>Modello batteria</label><input id="f-battModel" value="${esc(form.battModel)}" placeholder="es. NPL65-12"/></div>
+      <div class="row2"><div class="field"><label>Tensione elemento (V)</label><input id="f-battVoltage" type="number" value="${esc(form.battVoltage)}" placeholder="12"/></div><div class="field"><label>Capacità (Ah)</label><input id="f-battAh" type="number" value="${esc(form.battAh)}" placeholder="65"/></div></div>
+      <div class="row2"><div class="field"><label>Elementi per stringa</label><input id="f-battElements" type="number" value="${esc(form.battElements)}" placeholder="4"/></div><div class="field"><label>N° stringhe</label><input id="f-battStrings" type="number" value="${esc(form.battStrings)}" placeholder="2"/></div></div>
+      <div class="field"><label>Data installazione batterie (gg/mm/aaaa)</label><input id="f-battInstallDate" value="${esc(form.battInstallDate)}" placeholder="15/03/2023"/></div>
+      <label class="split-toggle"><input type="checkbox" id="f-battSplit" ${form.battSplit?"checked":""}/><span>🔀 Batterie divise (neutro) — tensione spezzata a metà</span></label>
+      <div class="field"><label>Tensione totale calcolata</label><div class="calc-box" id="calc-box">⚡ ${tv()}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}</div></div>
+    </div>
+    <div class="section"><div class="sec-title">🔧 Manutenzione programmata</div>
+      <div class="field"><label>Frequenza contratto</label><select id="f-maintFreq"><option value="">—</option>${fo}</select></div>
+      <div class="field"><label>Data ultimo intervento (gg/mm/aaaa)</label><input id="f-maintLastDate" value="${esc(form.maintLastDate)}" placeholder="01/03/2025"/></div>
+      <div class="field"><label>Note manutenzione</label><textarea id="f-maintNotes" placeholder="es. Contratto full-risk, include batterie">${esc(form.maintNotes)}</textarea></div>
+    </div>
+    <div class="section"><div class="sec-title">📝 Note tecniche</div>
+      <div class="field"><label>Codici accesso, avvertenze, particolarità...</label><textarea id="f-notes" placeholder="es. Codice menu: 0012 — NON toccare EPO">${esc(form.notes)}</textarea></div>
+    </div>
+    <button class="save-btn" id="btn-save">${isEdit?"💾 Salva modifiche":"💾 Salva impianto"}</button>
+    <div class="spacer"></div>
+  </div>`;
+}
+
+function rDetail(){
+  const client=DB.clients.find(c=>c.id===activeClientId);
+  if(!client){view="search";return rSearch();}
+  let cards="";
+  client.ups.forEach(ups=>{
+    const b=ba(ups.battery?.installDate),s=ms(ups);
+    const hasTech=ups.serial||ups.yearMfg||ups.configIO||ups.voltageIn||ups.voltageOut;
+    const hasBatt=ups.battery&&(ups.battery.brand||ups.battery.model||ups.battery.voltage);
+    const hasMaint=ups.maint&&(ups.maint.freq&&ups.maint.freq!=="Nessuno"||ups.maint.lastDate);
+    let tr="",br="",mr="";
+    if(hasTech)[["Seriale",ups.serial],["Anno fabbrica",ups.yearMfg],["Config I/O",ups.configIO],["Tensione ingresso",ups.voltageIn?`${ups.voltageIn}V`:null],["Tensione uscita",ups.voltageOut?`${ups.voltageOut}V`:null]].filter(r=>r[1]).forEach(([l,v])=>{tr+=`<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-value">${esc(String(v))}</div></div>`;});
+    if(hasBatt){const bt=ups.battery;[["Marca",bt.brand],["Modello",bt.model],["Tensione elemento",bt.voltage?`${bt.voltage}V`:null],["Capacità",bt.ah?`${bt.ah}Ah`:null],["Elementi/stringa",bt.elements],["N° stringhe",bt.strings],["Tensione totale",bt.totalVoltage&&bt.totalVoltage!=="—"?bt.totalVoltage:null]].filter(r=>r[1]).forEach(([l,v])=>{br+=`<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-value${l==="Tensione totale"?" accent":""}">${esc(String(v))}</div></div>`;});if(bt.installDate){br+=`<div class="detail-item"><div class="detail-label">Data installazione</div><div class="detail-value" style="color:${b?b.color:"#e2e8f0"}">${esc(bt.installDate)}${b?` — ${b.label}`:""}</div></div>`;}}
+    if(hasMaint){const mt=ups.maint;if(mt.freq&&mt.freq!=="Nessuno")mr+=`<div class="detail-item"><div class="detail-label">Frequenza</div><div class="detail-value">ogni ${esc(mt.freq)}</div></div>`;if(mt.lastDate)mr+=`<div class="detail-item"><div class="detail-label">Ultimo intervento</div><div class="detail-value">${esc(mt.lastDate)}</div></div>`;if(s)mr+=`<div class="detail-item"><div class="detail-label">Prossimo intervento</div><div class="detail-value" style="color:${s.color};font-weight:700">${esc(s.label)}</div></div>`;if(mt.notes)mr+=`<div class="detail-item"><div class="detail-label">Note contratto</div><div class="detail-value" style="font-weight:400;color:#94a3b8">${esc(mt.notes)}</div></div>`;}
+    cards+=`<div class="section" style="padding:0;overflow:hidden;margin-bottom:12px"><div class="detail-head"><div style="flex:1;min-width:0"><div class="detail-head-name">${esc(ups.brand)} ${esc(ups.model)}</div><div class="detail-head-sub">${[ups.power?`${ups.power} kVA`:null,ups.topology].filter(Boolean).map(esc).join(" · ")}</div></div><div class="detail-actions"><button class="edit-btn" data-ups="${ups.id}">✏️</button><button class="delete-btn" data-ups="${ups.id}" data-client="${client.id}">🗑</button></div></div>${hasTech?`<div class="detail-sec"><div class="detail-sec-title">⚡ Dati tecnici</div>${tr}</div>`:""}${hasBatt?`<div class="detail-sec"><div class="detail-sec-title">🔋 Batterie</div>${br}</div>`:""}${hasMaint?`<div class="detail-sec"><div class="detail-sec-title">🔧 Manutenzione</div>${mr}</div>`:""}${ups.notes?`<div class="notes-box">📝 ${esc(ups.notes)}</div>`:""}<div class="added-at">Inserito il ${ups.addedAt}</div></div>`;
+  });
+  return`<div class="header">${logo("Scheda cliente")}</div>
+  <div class="body"><div class="back-btn" id="btn-back">← Torna alla ricerca</div>
+    <div style="margin-bottom:16px"><div style="font-size:18px;font-weight:700;color:#f8fafc">${esc(client.name)}</div>${client.location?`<div style="font-size:12px;color:#64748b;margin-top:3px">📍 ${esc(client.location)}</div>`:""}<div style="font-size:11px;color:#334155;margin-top:3px">${client.ups.length} UPS registrat${client.ups.length===1?"o":"i"}</div></div>
+    ${cards}
+    <button class="add-ups-btn" id="btn-add-ups">+ Aggiungi altro UPS a questo cliente</button>
+    <div class="spacer"></div>
+  </div>`;
+}
+
+function bind(){
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{activeTab=t.dataset.tab;render();}));
+  const si=document.getElementById("search-input");
+  if(si){si.addEventListener("input",e=>{searchStr=e.target.value;render();});if(activeTab==="clienti")si.focus();}
+  document.getElementById("search-clear")?.addEventListener("click",()=>{searchStr="";render();});
+  ["btn-new","fab-new"].forEach(id=>document.getElementById(id)?.addEventListener("click",()=>{view="add";form=ef();addingBrand=false;addingModel=false;render();}));
+  document.querySelectorAll(".client-card").forEach(el=>el.addEventListener("click",()=>{activeClientId=parseInt(el.dataset.id);view="detail";render();}));
+
+  // export/import
+  document.getElementById("btn-export")?.addEventListener("click",()=>{
+    const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`ups_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();toast("✅ Dati esportati!");
+  });
+  const ii=document.getElementById("import-input");
+  document.getElementById("btn-import")?.addEventListener("click",()=>ii?.click());
+  ii?.addEventListener("change",e=>{
+    const f=e.target.files[0];if(!f)return;
+    const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.clients)throw 0;DB=d;save(DB);toast(`✅ Importati ${DB.clients.length} clienti!`);render();}catch{toast("❌ File non valido","err");}};r.readAsText(f);
+  });
+
+  document.getElementById("btn-cancel")?.addEventListener("click",()=>{view=view==="edit"?"detail":"search";render();});
+
+  // form fields
+  ["clientName","location","power","yearMfg","serial","voltageIn","voltageOut","battModel","battVoltage","battAh","battElements","battStrings","battInstallDate","maintLastDate"].forEach(k=>{
+    const el=document.getElementById("f-"+k);if(!el)return;
+    el.addEventListener("input",e=>{form[k]=e.target.value;if(["battVoltage","battElements"].includes(k)){const cb=document.getElementById("calc-box");if(cb){const t=tv();cb.innerHTML=`⚡ ${t}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}`;}}}); 
+  });
+  ["brand","model","topology","configIO","battBrand","maintFreq"].forEach(k=>{
+    const el=document.getElementById("f-"+k);if(!el)return;
+    el.addEventListener("change",e=>{const v=e.target.value;if(k==="brand"&&v==="__add__"){addingBrand=true;form.brand="";form.model="";render();return;}if(k==="model"&&v==="__add__"){addingModel=true;form.model="";render();return;}form[k]=v;if(k==="brand"){form.model="";addingBrand=false;addingModel=false;}render();});
+  });
+  document.getElementById("f-battSplit")?.addEventListener("change",e=>{form.battSplit=e.target.checked;const cb=document.getElementById("calc-box");if(cb){const t=tv();cb.innerHTML=`⚡ ${t}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}`;}});
+  ["notes","maintNotes"].forEach(k=>{document.getElementById("f-"+k)?.addEventListener("input",e=>{form[k]=e.target.value;});});
+
+  const nb=document.getElementById("f-newBrand");if(nb){nb.focus();nb.addEventListener("input",e=>{form.newBrand=e.target.value;});}
+  document.getElementById("btn-saveBrand")?.addEventListener("click",()=>{const n=form.newBrand.trim();if(!n)return;DB.customBrands=DB.customBrands||{};DB.customBrands[n]=[];save(DB);form.brand=n;form.newBrand="";form.model="";addingBrand=false;toast(`Marca "${n}" aggiunta!`);render();});
+  document.getElementById("btn-cancelBrand")?.addEventListener("click",()=>{addingBrand=false;form.newBrand="";render();});
+  const nm=document.getElementById("f-newModel");if(nm){nm.focus();nm.addEventListener("input",e=>{form.newModel=e.target.value;});}
+  document.getElementById("btn-saveModel")?.addEventListener("click",()=>{const n=form.newModel.trim();if(!n||!form.brand)return;DB.customBrands=DB.customBrands||{};DB.customBrands[form.brand]=[...(DB.customBrands[form.brand]||[]),n];save(DB);form.model=n;form.newModel="";addingModel=false;toast(`Modello "${n}" aggiunto!`);render();});
+  document.getElementById("btn-cancelModel")?.addEventListener("click",()=>{addingModel=false;form.newModel="";render();});
+
+  document.getElementById("btn-save")?.addEventListener("click",()=>{
+    ["notes","maintNotes"].forEach(k=>{const el=document.getElementById("f-"+k);if(el)form[k]=el.value;});
+    if(!form.brand||!form.model){toast("Marca e modello obbligatori","err");return;}
+    if(view==="add"&&!form.clientName.trim()){toast("Nome cliente obbligatorio","err");return;}
+    const origAddedAt=view==="edit"?(DB.clients.flatMap(c=>c.ups).find(u=>u.id===editingUpsId)?.addedAt||new Date().toLocaleDateString("it-IT")):new Date().toLocaleDateString("it-IT");
+    const ups={id:view==="edit"?editingUpsId:Date.now(),brand:form.brand,model:form.model,power:form.power,topology:form.topology,configIO:form.configIO,serial:form.serial,yearMfg:form.yearMfg,voltageIn:form.voltageIn,voltageOut:form.voltageOut,battery:{brand:form.battBrand,model:form.battModel,voltage:form.battVoltage,ah:form.battAh,elements:form.battElements,strings:form.battStrings,installDate:form.battInstallDate,split:form.battSplit,totalVoltage:tv()},maint:{freq:form.maintFreq,lastDate:form.maintLastDate,notes:form.maintNotes},notes:form.notes,addedAt:origAddedAt};
+    if(view==="edit"){DB.clients=DB.clients.map(c=>({...c,ups:c.ups.map(u=>u.id===editingUpsId?ups:u)}));save(DB);toast("✅ Modifiche salvate!");view="detail";}
+    else{const i=DB.clients.findIndex(c=>c.name.toLowerCase()===form.clientName.trim().toLowerCase());if(i>=0)DB.clients[i].ups.push(ups);else DB.clients.push({id:Date.now(),name:form.clientName.trim(),location:form.location,ups:[ups]});save(DB);toast("✅ Impianto salvato!");view="search";}
+    form=ef();addingBrand=false;addingModel=false;render();
+  });
+
+  document.getElementById("btn-back")?.addEventListener("click",()=>{view="search";activeClientId=null;render();});
+  document.getElementById("btn-add-ups")?.addEventListener("click",()=>{const c=DB.clients.find(x=>x.id===activeClientId);if(!c)return;form=ef();form.clientName=c.name;view="add";addingBrand=false;addingModel=false;render();});
+  document.querySelectorAll(".edit-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();const upsId=parseInt(btn.dataset.ups);const ups=DB.clients.flatMap(c=>c.ups).find(u=>u.id===upsId);if(!ups)return;editingUpsId=upsId;form=ffu(ups);addingBrand=false;addingModel=false;view="edit";render();}));
+  document.querySelectorAll(".delete-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();if(!confirm("Eliminare questo UPS?"))return;const upsId=parseInt(btn.dataset.ups),clientId=parseInt(btn.dataset.client);const ci=DB.clients.findIndex(c=>c.id===clientId);if(ci<0)return;DB.clients[ci].ups=DB.clients[ci].ups.filter(u=>u.id!==upsId);if(DB.clients[ci].ups.length===0)DB.clients.splice(ci,1);save(DB);if(!DB.clients.find(c=>c.id===clientId)){view="search";activeClientId=null;}toast("UPS eliminato");render();}));
+}
+render();
+</script>
+</body>
+</html>
