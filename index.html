@@ -364,7 +364,7 @@ function initGis(){
 
 function checkExistingToken(){
   const token=gapi.client.getToken();
-  if(token){driveConnected=true;render();}
+  if(token){driveConnected=true;loadFromDrive();}
 }
 
 function connectDrive(){
@@ -406,6 +406,7 @@ async function syncToDrive(){
       });
     }
     toast("✅ Dati sincronizzati su Drive!");
+    await loadFromDrive();
     render();
   }catch(e){
     console.error(e);
@@ -473,6 +474,28 @@ function bind(){
   document.querySelectorAll(".delete-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();if(!confirm("Eliminare questo UPS?"))return;const upsId=parseInt(btn.dataset.ups),clientId=parseInt(btn.dataset.client);const ci=DB.clients.findIndex(c=>c.id===clientId);if(ci<0)return;DB.clients[ci].ups=DB.clients[ci].ups.filter(u=>u.id!==upsId);if(DB.clients[ci].ups.length===0)DB.clients.splice(ci,1);save(DB);if(!DB.clients.find(c=>c.id===clientId)){view="search";activeClientId=null;}toast("UPS eliminato");render();}));
 }
 
+async function loadFromDrive(){
+  try{
+    const res=await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId:GOOGLE_SHEET_ID,range:"Clienti!A2:D"
+    });
+    const rows=res.result.values||[];
+    if(rows.length===0){render();return;}
+    const res2=await gapi.client.sheets.spreadsheets.values.get({
+      spreadsheetId:GOOGLE_SHEET_ID,range:"UPS!A2:AA"
+    });
+    const upsRows=res2.result.values||[];
+    const clients=rows.map(r=>({id:parseInt(r[0]),name:r[1]||"",location:r[2]||"",addedAt:r[3]||"",ups:[]}));
+    upsRows.forEach(u=>{
+      const clientId=parseInt(u[1]);
+      const client=clients.find(c=>c.id===clientId);
+      if(!client)return;
+      client.ups.push({id:parseInt(u[0]),brand:u[2]||"",model:u[3]||"",power:u[4]||"",topology:u[5]||"",configIO:u[6]||"",serial:u[7]||"",yearMfg:u[8]||"",voltageIn:u[9]||"",voltageOut:u[10]||"",battery:{brand:u[11]||"",model:u[12]||"",voltage:u[13]||"",ah:u[14]||"",elements:u[15]||"",strings:u[16]||"",installDate:u[17]||"",split:u[18]==="SI",totalVoltage:u[19]||"",durMesi:u[20]||"",riInt:u[21]||""},maint:{freq:u[22]||"Nessuno",lastDate:u[23]||"",notes:u[24]||""},notes:u[25]||"",addedAt:u[26]||""});
+    });
+    DB.clients=clients;save(DB);render();
+    toast("☁️ Dati caricati da Drive!","info");
+  }catch(e){console.error(e);render();}
+}
 render();
 </script>
 
