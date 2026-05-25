@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<!-- UPS Assistant v5 -->
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>UPS Assistant</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0f1117;color:#e2e8f0;font-family:'IBM Plex Mono','Courier New',monospace;min-height:100vh}
+input,select,textarea,button{font-family:inherit}
+select option{background:#0f1117;color:#e2e8f0}
+.header{background:#161b27;border-bottom:1px solid #1e293b;padding:13px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#f59e0b,#ef4444);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.logo-title{font-size:13px;font-weight:700;color:#f8fafc;letter-spacing:.08em}
+.logo-sub{font-size:10px;color:#64748b}
+.nav-btn{padding:7px 13px;border-radius:6px;border:1px solid #1e293b;background:transparent;color:#64748b;font-size:11px;cursor:pointer}
+.nav-btn.accent{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#f59e0b}
+.body{padding:16px;max-width:500px;margin:0 auto}
+.section{background:#161b27;border:1px solid #1e293b;border-radius:10px;padding:16px;margin-bottom:12px}
+.sec-title{font-size:10px;color:#f59e0b;letter-spacing:.15em;text-transform:uppercase;font-weight:700;margin-bottom:14px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:10px;color:#64748b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.field input,.field select,.field textarea{display:block;width:100%;background:#0f1117;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;color:#e2e8f0;font-size:14px;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#f59e0b}
+.field textarea{resize:vertical;min-height:80px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.calc-box{background:#0f1117;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;font-size:14px;color:#f59e0b}
+.calc-note{font-size:11px;color:#64748b;margin-left:8px}
+.split-toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:10px 12px;background:#0f1117;border:1px solid #1e293b;border-radius:6px;cursor:pointer;user-select:none}
+.split-toggle input[type=checkbox]{width:16px;height:16px;accent-color:#f59e0b;cursor:pointer;flex-shrink:0}
+.split-toggle span{font-size:12px;color:#94a3b8}
+.save-btn{display:block;width:100%;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;border-radius:8px;padding:14px;font-size:13px;font-weight:700;letter-spacing:.08em;cursor:pointer}
+.inline-box{background:#0f1117;border:1px dashed #f59e0b;border-radius:8px;padding:12px;margin-bottom:12px}
+.inline-box label{display:block;font-size:10px;color:#64748b;letter-spacing:.1em;text-transform:uppercase;margin-bottom:5px}
+.inline-box input{display:block;width:100%;background:#161b27;border:1px solid #1e293b;border-radius:6px;padding:10px 11px;color:#e2e8f0;font-size:14px;outline:none;margin-bottom:8px}
+.inline-btns{display:flex;gap:8px}
+.inline-btns button{flex:1;padding:9px;border-radius:6px;font-size:11px;cursor:pointer}
+.inline-btns .confirm{background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;font-weight:700}
+.inline-btns .cancel{background:transparent;border:1px solid #1e293b;color:#64748b}
+.search-wrap{background:#161b27;border:1px solid #1e293b;border-radius:10px;padding:11px 14px;display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.search-wrap input{flex:1;background:none;border:none;outline:none;color:#e2e8f0;font-size:14px;min-width:0;width:100%}
+.search-clear{color:#64748b;cursor:pointer;font-size:18px;flex-shrink:0}
+.search-hint{font-size:10px;color:#334155;margin-bottom:14px;margin-top:-10px;padding:0 4px}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tab{flex:1;padding:8px;border-radius:7px;border:1px solid #1e293b;background:transparent;color:#64748b;font-size:11px;cursor:pointer;text-align:center}
+.tab.active{border-color:#f59e0b;background:rgba(245,158,11,.1);color:#f59e0b;font-weight:700}
+.alert-banner{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px;color:#fca5a5}
+.alert-banner.warn{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#fcd34d}
+.client-card{background:#161b27;border:1px solid #1e293b;border-radius:10px;margin-bottom:12px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.client-card:hover{border-color:#f59e0b}
+.card-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.card-name{font-size:14px;font-weight:700;color:#f8fafc}
+.card-loc{font-size:11px;color:#64748b;margin-top:2px}
+.badge{border-radius:4px;padding:2px 7px;font-size:10px;font-weight:700;white-space:nowrap;border:1px solid}
+.ups-row{padding:9px 14px;border-top:1px solid #1e293b}
+.ups-row-name{font-size:12px;color:#94a3b8;font-weight:600}
+.ups-row-info{font-size:10px;margin-top:3px}
+.detail-head{padding:12px 14px;background:rgba(245,158,11,.08);border-bottom:1px solid #1e293b;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.detail-head-name{font-size:15px;font-weight:700;color:#f59e0b}
+.detail-head-sub{font-size:11px;color:#64748b;margin-top:2px}
+.detail-actions{display:flex;gap:6px;flex-shrink:0}
+.edit-btn{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);border-radius:5px;padding:4px 10px;color:#f59e0b;font-size:10px;cursor:pointer}
+.delete-btn{background:transparent;border:1px solid rgba(239,68,68,.3);border-radius:5px;padding:4px 10px;color:#ef4444;font-size:10px;cursor:pointer}
+.maint-done-btn{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:5px;padding:4px 8px;color:#22c55e;font-size:10px;cursor:pointer}
+.detail-sec{border-top:1px solid #1e293b;padding:12px 14px}
+.detail-sec-title{font-size:10px;color:#f59e0b;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
+.detail-item{margin-bottom:8px}
+.detail-label{font-size:10px;color:#64748b;letter-spacing:.08em;text-transform:uppercase}
+.detail-value{font-size:13px;color:#e2e8f0;font-weight:600;margin-top:1px}
+.detail-value.accent{color:#f59e0b}
+.notes-box{margin:0 14px 14px;background:#0f1117;border-radius:6px;padding:10px;font-size:12px;color:#94a3b8;border-left:3px solid #f59e0b;line-height:1.6}
+.added-at{padding:6px 14px 10px;font-size:10px;color:#334155}
+.back-btn{font-size:11px;color:#f59e0b;cursor:pointer;margin-bottom:14px;display:flex;align-items:center;gap:5px}
+.drive-box{background:#161b27;border:1px solid #1e293b;border-radius:10px;padding:12px;margin-bottom:12px}
+.drive-status{display:flex;align-items:center;gap:6px;font-size:11px;margin-bottom:10px}
+.drive-status.on{color:#22c55e}
+.drive-status.off{color:#64748b}
+.drive-btns{display:flex;gap:6px}
+.drive-btns button{flex:1;padding:9px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;border:1px solid}
+.btn-connect{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#f59e0b}
+.btn-upload{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#22c55e}
+.btn-download{background:rgba(59,130,246,.1);border-color:rgba(59,130,246,.3);color:#60a5fa}
+.io-row{display:flex;gap:8px;margin-bottom:12px}
+.io-btn{flex:1;padding:10px;border-radius:7px;font-size:11px;cursor:pointer;font-weight:600;border:1px solid;background:rgba(100,116,139,.1);border-color:rgba(100,116,139,.3);color:#94a3b8}
+.add-ups-btn{display:block;width:100%;background:rgba(245,158,11,.08);color:#f59e0b;border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:12px;font-size:12px;cursor:pointer;margin-top:4px}
+.scad-card{background:#161b27;border:1px solid #1e293b;border-radius:10px;margin-bottom:12px;overflow:hidden;cursor:pointer}
+.scad-card-head{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.scad-ups-row{padding:8px 14px;border-top:1px solid #0f1117;font-size:11px}
+.hist-row{padding:8px 12px;border-top:1px solid #1e293b;font-size:11px;display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.hist-date{color:#f59e0b;font-weight:700;white-space:nowrap;font-size:10px}
+.hist-note{color:#94a3b8;flex:1}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{background:#161b27;border:1px solid #1e293b;border-radius:12px;padding:20px;width:100%;max-width:460px}
+.modal-title{font-size:14px;font-weight:700;color:#f59e0b;margin-bottom:16px}
+.modal-btns{display:flex;gap:8px;margin-top:16px}
+.modal-btns button{flex:1;padding:11px;border-radius:7px;font-size:12px;cursor:pointer;font-weight:600;border:1px solid}
+.empty{text-align:center;padding:50px 20px;color:#334155}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:11px 22px;border-radius:8px;font-size:13px;z-index:999;white-space:nowrap;pointer-events:none}
+.toast.ok{background:#14532d;border:1px solid #22c55e;color:#f8fafc}
+.toast.err{background:#7f1d1d;border:1px solid #ef4444;color:#f8fafc}
+.toast.info{background:#1e3a5f;border:1px solid #3b82f6;color:#93c5fd}
+.fab{position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#0f1117;border:none;border-radius:50%;width:52px;height:52px;font-size:22px;cursor:pointer;box-shadow:0 4px 18px rgba(245,158,11,.4);display:flex;align-items:center;justify-content:center;z-index:50}
+.spacer{height:70px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal-root"></div>
+<script>
+// ═══════════════════════════════════════════════
+// CONFIGURAZIONE
+// ═══════════════════════════════════════════════
+const GOOGLE_CLIENT_ID = "181525171898-1f7pg76fsk4937gvhquken6v3phef80q.apps.googleusercontent.com";
+const GOOGLE_SHEET_ID  = "1fV0XoBZV-wlSnnnoUlMGFldWxEtLtEXXXul3I49hQ-s";
+// ═══════════════════════════════════════════════
+
+// ── CATALOGO BATTERIE ─────────────────────────
+// Aggiungi qui le tue batterie: { ah, volt, riInt }
+const BATTERY_CATALOG = {
+  "YUASA": {
+    "NPL65-12":  { ah: 65,  volt: 12, riInt: 3.5 },
+    "NPL38-12":  { ah: 38,  volt: 12, riInt: 5.8 },
+    "NPL24-12":  { ah: 24,  volt: 12, riInt: 9.0 },
+    "NPL17-12":  { ah: 17,  volt: 12, riInt: 13.0 },
+    "NP7-12":    { ah: 7,   volt: 12, riInt: 30.0 },
+    "NP12-12":   { ah: 12,  volt: 12, riInt: 20.0 },
+  },
+"Elsypower": {
+    "FP12750":   { ah: 7,5, volt: 12, riInt: 34.0 },
+    "FP1290":    { ah: 9,   volt: 12, riInt: 19.0 },
+    "FP12120":   { ah: 12,  volt: 12, riInt: 19.0 },
+    "FP1218":    { ah: 18,  volt: 12, riInt: 12.0 },
+    "FP12240":   { ah: 26,  volt: 12, riInt: 12.0 },
+    "LFP1240":   { ah: 40,  volt: 12, riInt: 9.5  },
+    "LFP1260":   { ah: 60,  volt: 12, riInt: 5.7  },
+    "LFP1270":   { ah: 70,  volt: 12, riInt: 6.0  },
+    "LFP1280":   { ah: 80,  volt: 12, riInt: 5.7  },
+    "LFP12100":  { ah: 102, volt: 12, riInt: 4.5  },
+
+ },
+
+"Energysafe": {  
+    "004120810": { ah: 7,   volt: 12, riInt: 17.0 },
+    "00412093":  { ah: 9,   volt: 12, riInt: 14.0 },
+    "00412121":  { ah: 12,  volt: 12, riInt: 13.0 },
+    "00412180":  { ah: 18,  volt: 12, riInt: 10.5 },
+    "00412260":  { ah: 26,  volt: 12, riInt: 11.0 },
+    "00412410":  { ah: 40,  volt: 12, riInt: 7.0  },
+    "0041265":   { ah: 68,  volt: 12, riInt: 7.0  },
+    "0041280":   { ah: 80,  volt: 12, riInt: 5.0  },
+    "00412100":  { ah: 104, volt: 12, riInt: 5.0  },
+},
+
+  "CSB": {
+    "GP1272":    { ah: 7.2, volt: 12, riInt: 25.0 },
+    "HR1234W":   { ah: 9,   volt: 12, riInt: 18.0 },
+    "GP12650":   { ah: 65,  volt: 12, riInt: 4.0  },
+    "GP12400":   { ah: 40,  volt: 12, riInt: 6.5  },
+  },
+  "Fiamm": {
+    "FG20722":   { ah: 7.2, volt: 12, riInt: 28.0 },
+    "FG21202":   { ah: 12,  volt: 12, riInt: 19.0 },
+    "12FLX70":   { ah: 70,  volt: 12, riInt: 3.2  },
+  },
+  "Vision": {
+    "CP1270":    { ah: 7,   volt: 12, riInt: 30.0 },
+    "CP12400":   { ah: 40,  volt: 12, riInt: 6.8  },
+  },
+  "Leoch": {
+    "LP12-65":   { ah: 65,  volt: 12, riInt: 3.8  },
+    "LP12-40":   { ah: 40,  volt: 12, riInt: 6.2  },
+    "LP12-7":    { ah: 7,   volt: 12, riInt: 28.0 },
+  },
+  "Altra": {},
+};
+// ─────────────────────────────────────────────
+
+const SCOPES="https://www.googleapis.com/auth/spreadsheets";
+const DISCOVERY_DOC="https://sheets.googleapis.com/$discovery/rest?version=v4";
+const UPS_CATALOG={"Gtec":["Discovery","Saturn","Matrix","Shield","ZY120"],
+"Evada":[],
+"Powertronix":["Mizar","Alcor","Vela","Quasar"],
+"Eaton":["5P","5PX","9PX","9SX","9E","EX RT","Ellipse ECO","3S","5E","Pulsar M","EPE","93PM","93E","BladeUPS"],
+"APC / Schneider":["Smart-UPS 750","Smart-UPS 1000","Smart-UPS 1500","Smart-UPS 2200","Smart-UPS 3000","Smart-UPS RT","Symmetra LX","Symmetra PX","Galaxy 3500","Galaxy 5500","Easy UPS"],
+"Riello":["iDialog","Dialog Vision","Dialog+","Mistral","Sentinel Dual","Sentinel Pro","UPower","Master HP","Master MHT","Megaline","Multi Sentry"],
+"Vertiv":["Liebert GXT4","Liebert GXT5","Liebert PSI5","Liebert ITA2","Liebert EXL S1","Liebert APM","Liebert NXC","Liebert NXL","Liebert EXM2"],
+"Socomec":["NETYS PR","NETYS RT","ITYS E","ITYS R","DIGYS","DELPHYS GP","DELPHYS MX","MODULYS GP","MASTERYS GP4"],
+"Legrand":["Keor SP","Keor LP","Keor S","Keor T","Keor Multiplug","Daker DK","Niky S","Megaline"],
+"Powerware":["9120","9130","9140","9150","9155","9170+","9315"],
+"Ever":["ECO Pro","Sinline RT XL","Powerline RT","Forte","Ecoline"]};
+const CONFIGS=["1F in / 1F out","3F in / 1F out","3F in / 3F out","1F in / 3F out"];
+const TOPOLOGIE=["Online doppia conversione","Line-interactive","Standby / Off-line","Delta conversion"];
+const FREQ_OPTIONS=["Nessuno","3 mesi","4 mesi","6 mesi","12 mesi"];
+const SK="ups_v5";
+
+function load(){try{const r=localStorage.getItem(SK);return r?JSON.parse(r):{clients:[],customBrands:{}}}catch{return{clients:[],customBrands:{}}}}
+function save(d){try{localStorage.setItem(SK,JSON.stringify(d))}catch{}}
+
+let DB=load(),view="search",activeClientId=null,editingUpsId=null,searchStr="",activeTab="clienti";
+let form=ef(),addingBrand=false,addingModel=false;
+let driveConnected=false,gapiReady=false,gisReady=false,tokenClient=null;
+
+function ef(){return{clientName:"",location:"",brand:"",newBrand:"",model:"",newModel:"",power:"",topology:"",configIO:"",serial:"",yearMfg:"",voltageIn:"",voltageOut:"",reparto:"",battBrand:"",battModel:"",battVoltage:"",battAh:"",battElements:"",battStrings:"",battInstallDate:"",battSplit:false,battDurMesi:"",battRiInt:"",maintFreq:"Nessuno",maintLastDate:"",maintNotes:"",notes:""};}
+
+function ffu(ups){return{clientName:"",location:"",brand:ups.brand||"",newBrand:"",model:ups.model||"",newModel:"",power:ups.power||"",topology:ups.topology||"",configIO:ups.configIO||"",serial:ups.serial||"",yearMfg:ups.yearMfg||"",voltageIn:ups.voltageIn||"",voltageOut:ups.voltageOut||"",reparto:ups.reparto||"",battBrand:ups.battery?.brand||"",battModel:ups.battery?.model||"",battVoltage:ups.battery?.voltage||"",battAh:ups.battery?.ah||"",battElements:ups.battery?.elements||"",battStrings:ups.battery?.strings||"",battInstallDate:ups.battery?.installDate||"",battSplit:ups.battery?.split||false,battDurMesi:ups.battery?.durMesi||"",battRiInt:ups.battery?.riInt||"",maintFreq:ups.maint?.freq||"Nessuno",maintLastDate:ups.maint?.lastDate||"",maintNotes:ups.maint?.notes||"",notes:ups.notes||""};}
+
+function ab(){return[...Object.keys(UPS_CATALOG),...Object.keys(DB.customBrands||{})].sort()}
+function mf(b){return[...(UPS_CATALOG[b]||[]),...((DB.customBrands||{})[b]||[])]}
+function battBrands(){return Object.keys(BATTERY_CATALOG)}
+function battModels(b){return Object.keys(BATTERY_CATALOG[b]||{})}
+function battData(b,m){return BATTERY_CATALOG[b]?.[m]||null}
+
+function tv(){const v=parseFloat(form.battVoltage),n=parseInt(form.battElements);if(!isNaN(v)&&!isNaN(n)&&n>0){const t=v*n;return form.battSplit?`${t/2}V + ${t/2}V (con neutro)`:`${t}V`;}return"—";}
+function pd(s){if(!s)return null;const p=s.split("/");if(p.length!==3)return null;const d=new Date(`${p[2]}-${p[1]}-${p[0]}`);return isNaN(d)?null:d;}
+
+function ba(ups){
+  const inst=pd(ups.battery?.installDate);if(!inst)return null;
+  const dur=parseInt(ups.battery?.durMesi);if(isNaN(dur)||dur<=0)return null;
+  const scad=new Date(inst);scad.setMonth(scad.getMonth()+dur);
+  const dl=Math.floor((scad-Date.now())/(1000*60*60*24));
+  if(dl<0)return{label:`Scaduta da ${-dl}gg`,color:"#ef4444"};
+  if(dl<=30)return{label:`Scade in ${dl}gg`,color:"#f59e0b"};
+  return{label:`OK (${dl}gg alla scadenza)`,color:"#22c55e"};
+}
+
+function fm(f){if(f==="3 mesi")return 3;if(f==="4 mesi")return 4;if(f==="6 mesi")return 6;if(f==="12 mesi")return 12;return null;}
+function ms(ups){
+  const f=fm(ups.maint?.freq);if(!f||!ups.maint?.lastDate)return null;
+  const l=pd(ups.maint.lastDate);if(!l)return null;
+  const nx=new Date(l);nx.setMonth(nx.getMonth()+f);
+  const dl=Math.floor((nx-Date.now())/(1000*60*60*24));
+  const ns=nx.toLocaleDateString("it-IT");
+  if(dl<0)return{label:`SCADUTA da ${-dl}gg`,color:"#ef4444",next:ns,daysLeft:dl,urgent:true};
+  if(dl<=30)return{label:`Scade in ${dl}gg`,color:"#f59e0b",next:ns,daysLeft:dl,urgent:true};
+  return{label:`Prossima: ${ns}`,color:"#22c55e",next:ns,daysLeft:dl,urgent:false};
+}
+
+// Solo manutenzioni negli avvisi, NON batterie
+function auGrouped(){
+  const map={};
+  DB.clients.forEach(c=>{
+    c.ups.forEach(u=>{
+      const s=ms(u);
+      if(s?.urgent){
+        if(!map[c.id])map[c.id]={clientId:c.id,clientName:c.name,location:c.location,issues:[],worstDays:999};
+        map[c.id].issues.push({type:"maint",label:s.label,color:s.color,daysLeft:s.daysLeft,upsName:`${u.brand} ${u.model}`});
+        if(s.daysLeft<map[c.id].worstDays)map[c.id].worstDays=s.daysLeft;
+      }
+    });
+  });
+  return Object.values(map).sort((a,b)=>a.worstDays-b.worstDays);
+}
+function urgentCount(){return DB.clients.reduce((tot,c)=>tot+c.ups.filter(u=>ms(u)?.urgent).length,0);}
+
+let tt=null;
+function toast(msg,type="ok"){clearTimeout(tt);const o=document.querySelector(".toast");if(o)o.remove();const t=document.createElement("div");t.className=`toast ${type}`;t.textContent=msg;document.body.appendChild(t);tt=setTimeout(()=>t.remove(),3000);}
+
+function render(){document.getElementById("app").innerHTML=view==="add"||view==="edit"?rForm():view==="detail"?rDetail():rSearch();bind();}
+function logo(sub){return`<div class="logo-wrap"><div class="logo-icon">⚡</div><div><div class="logo-title">UPS ASSISTANT</div><div class="logo-sub">${sub}</div></div></div>`;}
+function esc(s){if(!s)return"";return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+
+// ── DRIVE ─────────────────────────────────────
+function initGapi(){gapi.load("client",async()=>{await gapi.client.init({discoveryDocs:[DISCOVERY_DOC]});gapiReady=true;tryAutoConnect();});}
+function initGis(){tokenClient=google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID,scope:SCOPES,callback:(resp)=>{if(resp.error){toast("Errore autenticazione","err");return;}driveConnected=true;render();toast("☁️ Drive connesso!","info");}});gisReady=true;tryAutoConnect();}
+function tryAutoConnect(){if(gapiReady&&gisReady&&gapi.client.getToken()){driveConnected=true;render();}}
+function connectDrive(){
+  if(!gapiReady||!gisReady){toast("API non pronte, riprova","err");return;}
+  const token=gapi.client.getToken();
+  if(!token){tokenClient.requestAccessToken({prompt:""});}
+  else{driveConnected=true;render();toast("☁️ Drive connesso","info");}
+}
+
+async function downloadFromDrive(){
+  if(!driveConnected){connectDrive();return;}
+  toast("⬇️ Caricamento da Drive...","info");
+  try{
+    const r1=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:GOOGLE_SHEET_ID,range:"Clienti!A2:D"});
+    const r2=await gapi.client.sheets.spreadsheets.values.get({spreadsheetId:GOOGLE_SHEET_ID,range:"UPS!A2:AB"});
+    const clientRows=r1.result.values||[];
+    const upsRows=r2.result.values||[];
+    if(clientRows.length===0){toast("Nessun dato su Drive","err");return;}
+    const clients=clientRows.filter(r=>r[0]).map(r=>({id:parseInt(r[0]),name:r[1]||"",location:r[2]||"",addedAt:r[3]||"",ups:[]}));
+    upsRows.filter(u=>u[0]).forEach(u=>{
+      const client=clients.find(c=>c.id===parseInt(u[1]));if(!client)return;
+      client.ups.push({id:parseInt(u[0]),brand:u[2]||"",model:u[3]||"",power:u[4]||"",topology:u[5]||"",configIO:u[6]||"",serial:u[7]||"",yearMfg:u[8]||"",voltageIn:u[9]||"",voltageOut:u[10]||"",reparto:u[11]||"",battery:{brand:u[12]||"",model:u[13]||"",voltage:u[14]||"",ah:u[15]||"",elements:u[16]||"",strings:u[17]||"",installDate:u[18]||"",split:u[19]==="SI",totalVoltage:u[20]||"",durMesi:u[21]||"",riInt:u[22]||""},maint:{freq:u[23]||"Nessuno",lastDate:u[24]||"",notes:u[25]||""},notes:u[26]||"",addedAt:u[27]||""});
+    });
+    DB.clients=clients;save(DB);render();toast(`✅ Caricati ${clients.length} clienti da Drive!`);
+  }catch(e){console.error(e);if(e.status===401){driveConnected=false;connectDrive();}else toast("Errore: "+e.message,"err");}
+}
+
+async function uploadToDrive(){
+  if(!driveConnected){connectDrive();return;}
+  toast("⬆️ Salvataggio su Drive...","info");
+  try{
+    await gapi.client.sheets.spreadsheets.values.clear({spreadsheetId:GOOGLE_SHEET_ID,range:"Clienti!A2:Z"});
+    await gapi.client.sheets.spreadsheets.values.clear({spreadsheetId:GOOGLE_SHEET_ID,range:"UPS!A2:Z"});
+    const cr=DB.clients.map(c=>[c.id,c.name,c.location||"",c.addedAt||""]);
+    const ur=[];
+    DB.clients.forEach(c=>{c.ups.forEach(u=>{ur.push([u.id,c.id,u.brand,u.model,u.power||"",u.topology||"",u.configIO||"",u.serial||"",u.yearMfg||"",u.voltageIn||"",u.voltageOut||"",u.reparto||"",u.battery?.brand||"",u.battery?.model||"",u.battery?.voltage||"",u.battery?.ah||"",u.battery?.elements||"",u.battery?.strings||"",u.battery?.installDate||"",u.battery?.split?"SI":"NO",u.battery?.totalVoltage||"",u.battery?.durMesi||"",u.battery?.riInt||"",u.maint?.freq||"",u.maint?.lastDate||"",u.maint?.notes||"",u.notes||"",u.addedAt||""]);});});
+    if(cr.length>0)await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:GOOGLE_SHEET_ID,range:"Clienti!A2",valueInputOption:"RAW",resource:{values:cr}});
+    if(ur.length>0)await gapi.client.sheets.spreadsheets.values.update({spreadsheetId:GOOGLE_SHEET_ID,range:"UPS!A2",valueInputOption:"RAW",resource:{values:ur}});
+    toast("✅ Dati salvati su Drive!");
+  }catch(e){console.error(e);if(e.status===401){driveConnected=false;connectDrive();}else toast("Errore: "+e.message,"err");}
+}
+
+async function saveMaintToHistory(clientId,ups,note,esito){
+  if(!driveConnected)return;
+  try{
+    const today=new Date().toLocaleDateString("it-IT");
+    const row=[Date.now(),clientId,ups.id,today,esito,note,"Marcello"];
+    await gapi.client.sheets.spreadsheets.values.append({spreadsheetId:GOOGLE_SHEET_ID,range:"Manutenzioni!A:G",valueInputOption:"RAW",resource:{values:[row]}});
+  }catch(e){console.error("Errore salvataggio storico:",e);}
+}
+
+// ── MODAL MANUTENZIONE FATTA ──────────────────
+function showMaintModal(clientId,upsId){
+  const client=DB.clients.find(c=>c.id===clientId);
+  const ups=client?.ups.find(u=>u.id===upsId);
+  if(!ups)return;
+  const mr=document.getElementById("modal-root");
+  mr.innerHTML=`<div class="modal-overlay" id="modal-overlay">
+    <div class="modal">
+      <div class="modal-title">✅ Segna manutenzione — ${esc(ups.brand)} ${esc(ups.model)}</div>
+      <div class="field"><label>Data intervento (gg/mm/aaaa)</label><input id="m-date" value="${new Date().toLocaleDateString("it-IT")}"/></div>
+      <div class="field"><label>Esito</label>
+        <select id="m-esito">
+          <option>Tutto ok</option>
+          <option>Anomalia riscontrata</option>
+          <option>Da ricontrollare</option>
+          <option>Batterie sostituite</option>
+          <option>Intervento parziale</option>
+        </select>
+      </div>
+      <div class="field"><label>Note intervento</label><textarea id="m-note" placeholder="es. Misurate tensioni batterie, tutto nella norma..." style="min-height:70px"></textarea></div>
+      <div class="modal-btns">
+        <button style="background:transparent;border-color:#334155;color:#64748b" id="m-cancel">Annulla</button>
+        <button style="background:linear-gradient(135deg,#22c55e,#16a34a);border-color:#22c55e;color:#0f1117;font-weight:700" id="m-confirm">✅ Conferma</button>
+      </div>
+    </div>
+  </div>`;
+  document.getElementById("m-cancel").addEventListener("click",()=>{mr.innerHTML="";});
+  document.getElementById("modal-overlay").addEventListener("click",e=>{if(e.target.id==="modal-overlay")mr.innerHTML="";});
+  document.getElementById("m-confirm").addEventListener("click",()=>{
+    const date=document.getElementById("m-date").value.trim();
+    const esito=document.getElementById("m-esito").value;
+    const note=document.getElementById("m-note").value.trim();
+    if(!date){toast("Inserisci la data","err");return;}
+    // Aggiorna data ultimo intervento
+    DB.clients=DB.clients.map(c=>{
+      if(c.id!==clientId)return c;
+      return{...c,ups:c.ups.map(u=>{
+        if(u.id!==upsId)return u;
+        const hist=[...(u.history||[]),{date,esito,note}];
+        return{...u,maint:{...u.maint,lastDate:date},history:hist};
+      })};
+    });
+    save(DB);
+    saveMaintToHistory(clientId,ups,note,esito);
+    mr.innerHTML="";
+    toast("✅ Manutenzione registrata!");
+    render();
+  });
+}
+
+// ── SEARCH ────────────────────────────────────
+function rSearch(){
+  const uc=urgentCount(),grouped=auGrouped();
+
+  // Ricerca su nome cliente E seriale
+  const q=searchStr.toLowerCase();
+  const filtered=DB.clients.filter(c=>{
+    if(c.name.toLowerCase().includes(q))return true;
+    if((c.location||"").toLowerCase().includes(q))return true;
+    if(c.ups.some(u=>(u.serial||"").toLowerCase().includes(q)))return true;
+    return false;
+  });
+
+  let content="";
+  if(activeTab==="scadenze"){
+    if(grouped.length===0){content=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">✅</div><div style="font-size:13px">Nessuna scadenza urgente</div><div style="font-size:11px;margin-top:4px">Tutto sotto controllo</div></div>`;}
+    else grouped.forEach(g=>{
+      const wc=g.issues.some(i=>i.color==="#ef4444")?"#ef4444":"#f59e0b";
+      let rows="";g.issues.forEach(i=>{rows+=`<div class="scad-ups-row"><span style="color:#94a3b8">${esc(i.upsName)}</span> — <span style="color:${i.color};font-weight:600">🔧 ${esc(i.label)}</span></div>`;});
+      content+=`<div class="scad-card" data-id="${g.clientId}"><div class="scad-card-head"><div><div style="font-size:14px;font-weight:700;color:#f8fafc">${esc(g.clientName)}</div>${g.location?`<div style="font-size:11px;color:#64748b;margin-top:2px">📍 ${esc(g.location)}</div>`:""}</div><span class="badge" style="color:${wc};border-color:${wc}40;background:${wc}15">${g.issues.length} alert</span></div>${rows}</div>`;
+    });
+  } else {
+    const cc=grouped.filter(g=>g.issues.some(i=>i.color==="#ef4444")).length,wc=grouped.filter(g=>!g.issues.some(i=>i.color==="#ef4444")).length;
+    if(cc>0)content+=`<div class="alert-banner">🔴 ${cc} cliente${cc>1?"i":""} con scadenze critiche</div>`;
+    else if(wc>0)content+=`<div class="alert-banner warn">🟡 ${wc} cliente${wc>1?"i":""} con scadenze in arrivo</div>`;
+
+    content+=`<div class="drive-box">
+      <div class="drive-status ${driveConnected?"on":"off"}">${driveConnected?"☁️ Google Drive connesso":"○ Google Drive non connesso"}</div>
+      <div class="drive-btns">${!driveConnected
+        ?`<button class="btn-connect" id="btn-connect">🔗 Connetti Drive</button>`
+        :`<button class="btn-download" id="btn-download">⬇️ Carica da Drive</button><button class="btn-upload" id="btn-upload">⬆️ Salva su Drive</button>`
+      }</div>
+    </div>`;
+    content+=`<div class="io-row"><button class="io-btn" id="btn-export">📁 Esporta JSON</button><button class="io-btn" id="btn-import">📂 Importa JSON</button></div><input type="file" id="import-input" accept=".json" style="display:none"/>`;
+
+    if(filtered.length===0){
+      content+=`<div class="empty"><div style="font-size:36px;margin-bottom:10px">⚡</div><div style="font-size:13px">${DB.clients.length===0?"Nessun impianto registrato":"Nessun risultato"}</div><div style="font-size:11px;margin-top:4px">${DB.clients.length===0?"Premi + Nuovo per iniziare":"Prova con un altro nome"}</div></div>`;
+    } else {
+      filtered.forEach(c=>{
+        let rows="";
+        c.ups.forEach(u=>{
+          const s=ms(u),b=ba(u);
+          let info="";
+          if(s)info+=`<span style="color:${s.color}">🔧 ${s.label}</span> `;
+          // Batterie: solo indicatore colore in lista, niente testo
+          if(b&&b.color!=="#22c55e")info+=`<span style="color:${b.color}">🔋</span>`;
+          rows+=`<div class="ups-row"><div class="ups-row-name">${esc(u.brand)} ${esc(u.model)}${u.power?` · ${u.power}kVA`:""}${u.reparto?` · ${esc(u.reparto)}`:""}</div>${info?`<div class="ups-row-info">${info}</div>`:""}</div>`;
+        });
+        content+=`<div class="client-card" data-id="${c.id}"><div class="card-head"><div><div class="card-name">${esc(c.name)}</div>${c.location?`<div class="card-loc">📍 ${esc(c.location)}</div>`:""}</div><span class="badge" style="color:#64748b;border-color:#334155;background:rgba(100,116,139,.15)">${c.ups.length} UPS</span></div>${rows}</div>`;
+      });
+    }
+  }
+
+  return`<div class="header">${logo("Field Manager v5")}<button class="nav-btn accent" id="btn-new">+ Nuovo</button></div>
+  <div class="body">
+    <div class="tabs"><button class="tab${activeTab==="clienti"?" active":""}" data-tab="clienti">👤 Clienti</button><button class="tab${activeTab==="scadenze"?" active":""}" data-tab="scadenze">🔔 Scadenze${uc>0?` (${uc})`:""}</button></div>
+    ${activeTab==="clienti"?`<div class="search-wrap"><span style="color:#64748b">🔍</span><input id="search-input" placeholder="Cerca per cliente o seriale..." value="${esc(searchStr)}" autocomplete="off"/>${searchStr?`<span class="search-clear" id="search-clear">×</span>`:""}</div><div class="search-hint">Puoi cercare per nome cliente o numero seriale UPS</div>`:""}
+    ${content}<div class="spacer"></div>
+  </div><button class="fab" id="fab-new">+</button>`;
+}
+
+// ── FORM ──────────────────────────────────────
+function rForm(){
+  const isEdit=view==="edit",models=mf(form.brand);
+  const bo=ab().map(b=>`<option value="${esc(b)}"${form.brand===b?" selected":""}>${esc(b)}</option>`).join("");
+  const mo=models.map(m=>`<option value="${esc(m)}"${form.model===m?" selected":""}>${esc(m)}</option>`).join("");
+  const bbo=battBrands().map(b=>`<option value="${esc(b)}"${form.battBrand===b?" selected":""}>${esc(b)}</option>`).join("");
+  const bmo=battModels(form.battBrand).map(m=>`<option value="${esc(m)}"${form.battModel===m?" selected":""}>${esc(m)}</option>`).join("");
+  const to=TOPOLOGIE.map(t=>`<option value="${esc(t)}"${form.topology===t?" selected":""}>${esc(t)}</option>`).join("");
+  const co=CONFIGS.map(c=>`<option value="${esc(c)}"${form.configIO===c?" selected":""}>${esc(c)}</option>`).join("");
+  const fo=FREQ_OPTIONS.map(f=>`<option value="${esc(f)}"${form.maintFreq===f?" selected":""}>${esc(f)}</option>`).join("");
+
+  return`<div class="header">${logo(isEdit?"Modifica UPS":"Nuovo impianto")}<button class="nav-btn" id="btn-cancel">← Annulla</button></div>
+  <div class="body">
+    ${!isEdit?`<div class="section"><div class="sec-title">👤 Cliente</div><div class="field"><label>Nome cliente *</label><input id="f-clientName" value="${esc(form.clientName)}" placeholder="es. Rossi Srl"/></div><div class="field"><label>Sede / Indirizzo</label><input id="f-location" value="${esc(form.location)}" placeholder="es. Via Roma 5, Milano"/></div></div>`:""}
+    <div class="section"><div class="sec-title">⚡ Dati UPS</div>
+      <div class="field"><label>Marca *</label><select id="f-brand"><option value="">— Seleziona marca —</option>${bo}<option value="__add__">➕ Aggiungi nuova marca...</option></select></div>
+      ${addingBrand?`<div class="inline-box"><label>Nome nuova marca</label><input id="f-newBrand" value="${esc(form.newBrand)}" placeholder="es. Socomec"/><div class="inline-btns"><button class="confirm" id="btn-saveBrand">Aggiungi</button><button class="cancel" id="btn-cancelBrand">Annulla</button></div></div>`:""}
+      <div class="field"><label>Modello *</label><select id="f-model" ${!form.brand?"disabled":""}><option value="">${form.brand?"— Seleziona modello —":"— Prima seleziona marca —"}</option>${mo}${form.brand?`<option value="__add__">➕ Aggiungi nuovo modello...</option>`:""}</select></div>
+      ${addingModel?`<div class="inline-box"><label>Nome nuovo modello</label><input id="f-newModel" value="${esc(form.newModel)}" placeholder="es. 9PX 3000i RT2U"/><div class="inline-btns"><button class="confirm" id="btn-saveModel">Aggiungi</button><button class="cancel" id="btn-cancelModel">Annulla</button></div></div>`:""}
+      <div class="row2"><div class="field"><label>Potenza (kVA)</label><input id="f-power" type="number" value="${esc(form.power)}" placeholder="3"/></div><div class="field"><label>Anno fabbrica</label><input id="f-yearMfg" type="number" value="${esc(form.yearMfg)}" placeholder="2021"/></div></div>
+      <div class="field"><label>N° Seriale</label><input id="f-serial" value="${esc(form.serial)}" placeholder="es. G123456789"/></div>
+      <div class="field"><label>Reparto / Posizione</label><input id="f-reparto" value="${esc(form.reparto)}" placeholder="es. Sala server piano 1"/></div>
+      <div class="field"><label>Topologia</label><select id="f-topology"><option value="">—</option>${to}</select></div>
+      <div class="field"><label>Configurazione ingresso / uscita</label><select id="f-configIO"><option value="">—</option>${co}</select></div>
+      <div class="row2"><div class="field"><label>Tensione in (V)</label><input id="f-voltageIn" type="number" value="${esc(form.voltageIn)}" placeholder="230"/></div><div class="field"><label>Tensione out (V)</label><input id="f-voltageOut" type="number" value="${esc(form.voltageOut)}" placeholder="230"/></div></div>
+    </div>
+    <div class="section"><div class="sec-title">🔋 Batterie</div>
+      <div class="field"><label>Marca batteria</label><select id="f-battBrand"><option value="">—</option>${bbo}</select></div>
+      <div class="field"><label>Modello batteria</label><select id="f-battModel" ${!form.battBrand?"disabled":""}><option value="">${form.battBrand?"— Seleziona modello —":"— Prima seleziona marca —"}</option>${bmo}</select></div>
+      <div class="row2"><div class="field"><label>Tensione elemento (V)</label><input id="f-battVoltage" type="number" value="${esc(form.battVoltage)}" placeholder="12"/></div><div class="field"><label>Capacità (Ah)</label><input id="f-battAh" type="number" value="${esc(form.battAh)}" placeholder="65"/></div></div>
+      <div class="row2"><div class="field"><label>Elementi per stringa</label><input id="f-battElements" type="number" value="${esc(form.battElements)}" placeholder="4"/></div><div class="field"><label>N° stringhe</label><input id="f-battStrings" type="number" value="${esc(form.battStrings)}" placeholder="2"/></div></div>
+      <div class="field"><label>Data installazione (gg/mm/aaaa)</label><input id="f-battInstallDate" value="${esc(form.battInstallDate)}" placeholder="15/03/2023"/></div>
+      <div class="row2"><div class="field"><label>Durata prevista (mesi)</label><input id="f-battDurMesi" type="number" value="${esc(form.battDurMesi)}" placeholder="48"/></div><div class="field"><label>Resist. interna nom. (mΩ)</label><input id="f-battRiInt" type="number" step="0.1" value="${esc(form.battRiInt)}" placeholder="3.5"/></div></div>
+      <label class="split-toggle"><input type="checkbox" id="f-battSplit" ${form.battSplit?"checked":""}/><span>🔀 Batterie divise (neutro)</span></label>
+      <div class="field"><label>Tensione totale calcolata</label><div class="calc-box" id="calc-box">⚡ ${tv()}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}</div></div>
+    </div>
+    <div class="section"><div class="sec-title">🔧 Manutenzione programmata</div>
+      <div class="field"><label>Frequenza contratto</label><select id="f-maintFreq"><option value="">—</option>${fo}</select></div>
+      <div class="field"><label>Data ultimo intervento (gg/mm/aaaa)</label><input id="f-maintLastDate" value="${esc(form.maintLastDate)}" placeholder="01/03/2025"/></div>
+      <div class="field"><label>Note manutenzione</label><textarea id="f-maintNotes" placeholder="es. Contratto full-risk">${esc(form.maintNotes)}</textarea></div>
+    </div>
+    <div class="section"><div class="sec-title">📝 Note tecniche</div>
+      <div class="field"><label>Codici, avvertenze, particolarità...</label><textarea id="f-notes" placeholder="es. Codice menu: 0012 — NON toccare EPO">${esc(form.notes)}</textarea></div>
+    </div>
+    <button class="save-btn" id="btn-save">${isEdit?"💾 Salva modifiche":"💾 Salva impianto"}</button>
+    <div class="spacer"></div>
+  </div>`;
+}
+
+// ── DETAIL ────────────────────────────────────
+function rDetail(){
+  const client=DB.clients.find(c=>c.id===activeClientId);
+  if(!client){view="search";return rSearch();}
+  let cards="";
+  client.ups.forEach(ups=>{
+    const b=ba(ups),s=ms(ups);
+    const hasTech=ups.serial||ups.yearMfg||ups.configIO||ups.voltageIn||ups.voltageOut||ups.reparto;
+    const hasBatt=ups.battery&&(ups.battery.brand||ups.battery.model||ups.battery.voltage);
+    const hasMaint=ups.maint&&(ups.maint.freq&&ups.maint.freq!=="Nessuno"||ups.maint.lastDate);
+    const hasHist=ups.history&&ups.history.length>0;
+    let tr="",br="",mr="",hr="";
+    if(hasTech)[["Seriale",ups.serial],["Anno fabbrica",ups.yearMfg],["Config I/O",ups.configIO],["Reparto / Posizione",ups.reparto],["Tensione ingresso",ups.voltageIn?`${ups.voltageIn}V`:null],["Tensione uscita",ups.voltageOut?`${ups.voltageOut}V`:null]].filter(r=>r[1]).forEach(([l,v])=>{tr+=`<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-value">${esc(String(v))}</div></div>`;});
+    if(hasBatt){const bt=ups.battery;
+      [["Marca",bt.brand],["Modello",bt.model],["Tensione elemento",bt.voltage?`${bt.voltage}V`:null],["Capacità",bt.ah?`${bt.ah}Ah`:null],["Elementi/stringa",bt.elements],["N° stringhe",bt.strings],["Tensione totale",bt.totalVoltage&&bt.totalVoltage!=="—"?bt.totalVoltage:null],["Resist. interna nom.",bt.riInt?`${bt.riInt} mΩ`:null],["Durata prevista",bt.durMesi?`${bt.durMesi} mesi`:null]].filter(r=>r[1]).forEach(([l,v])=>{br+=`<div class="detail-item"><div class="detail-label">${l}</div><div class="detail-value${l==="Tensione totale"?" accent":""}">${esc(String(v))}</div></div>`;});
+      if(bt.installDate)br+=`<div class="detail-item"><div class="detail-label">Data installazione</div><div class="detail-value" style="color:${b?b.color:"#e2e8f0"}">${esc(bt.installDate)}${b?` — ${b.label}`:""}</div></div>`;
+    }
+    if(hasMaint){const mt=ups.maint;
+      if(mt.freq&&mt.freq!=="Nessuno")mr+=`<div class="detail-item"><div class="detail-label">Frequenza</div><div class="detail-value">ogni ${esc(mt.freq)}</div></div>`;
+      if(mt.lastDate)mr+=`<div class="detail-item"><div class="detail-label">Ultimo intervento</div><div class="detail-value">${esc(mt.lastDate)}</div></div>`;
+      if(s)mr+=`<div class="detail-item"><div class="detail-label">Prossimo intervento</div><div class="detail-value" style="color:${s.color};font-weight:700">${esc(s.label)}</div></div>`;
+      if(mt.notes)mr+=`<div class="detail-item"><div class="detail-label">Note contratto</div><div class="detail-value" style="font-weight:400;color:#94a3b8">${esc(mt.notes)}</div></div>`;
+    }
+    if(hasHist){const hist=[...(ups.history||[])].reverse().slice(0,5);hist.forEach(h=>{hr+=`<div class="hist-row"><div class="hist-date">${esc(h.date)}<br/><span style="color:${h.esito==="Tutto ok"?"#22c55e":h.esito==="Da ricontrollare"?"#f59e0b":"#94a3b8"};font-size:9px">${esc(h.esito)}</span></div><div class="hist-note">${esc(h.note||"—")}</div></div>`;});}
+
+    cards+=`<div class="section" style="padding:0;overflow:hidden;margin-bottom:12px">
+      <div class="detail-head">
+        <div style="flex:1;min-width:0"><div class="detail-head-name">${esc(ups.brand)} ${esc(ups.model)}</div><div class="detail-head-sub">${[ups.power?`${ups.power} kVA`:null,ups.topology,ups.reparto].filter(Boolean).map(esc).join(" · ")}</div></div>
+        <div class="detail-actions">
+          <button class="maint-done-btn" data-ups="${ups.id}" data-client="${client.id}">✅ Fatto</button>
+          <button class="edit-btn" data-ups="${ups.id}">✏️</button>
+          <button class="delete-btn" data-ups="${ups.id}" data-client="${client.id}">🗑</button>
+        </div>
+      </div>
+      ${hasTech?`<div class="detail-sec"><div class="detail-sec-title">⚡ Dati tecnici</div>${tr}</div>`:""}
+      ${hasBatt?`<div class="detail-sec"><div class="detail-sec-title">🔋 Batterie</div>${br}</div>`:""}
+      ${hasMaint?`<div class="detail-sec"><div class="detail-sec-title">🔧 Manutenzione</div>${mr}</div>`:""}
+      ${hasHist?`<div class="detail-sec"><div class="detail-sec-title">📋 Storico interventi</div>${hr}</div>`:""}
+      ${ups.notes?`<div class="notes-box">📝 ${esc(ups.notes)}</div>`:""}
+      <div class="added-at">Inserito il ${ups.addedAt}</div>
+    </div>`;
+  });
+
+  return`<div class="header">${logo("Scheda cliente")}</div>
+  <div class="body"><div class="back-btn" id="btn-back">← Torna alla ricerca</div>
+    <div style="margin-bottom:16px"><div style="font-size:18px;font-weight:700;color:#f8fafc">${esc(client.name)}</div>${client.location?`<div style="font-size:12px;color:#64748b;margin-top:3px">📍 ${esc(client.location)}</div>`:""}<div style="font-size:11px;color:#334155;margin-top:3px">${client.ups.length} UPS registrat${client.ups.length===1?"o":"i"}</div></div>
+    ${cards}
+    <button class="add-ups-btn" id="btn-add-ups">+ Aggiungi altro UPS a questo cliente</button>
+    <div class="spacer"></div>
+  </div>`;
+}
+
+// ── BIND ──────────────────────────────────────
+function bind(){
+  document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{activeTab=t.dataset.tab;render();}));
+
+  // Ricerca — aggiorna senza re-render completo per evitare bug cursore
+  const si=document.getElementById("search-input");
+  if(si){
+    si.addEventListener("input",e=>{
+      searchStr=e.target.value;
+      // Aggiorna solo la lista, non il campo input
+      const body=document.querySelector(".body");
+      if(body){const tmp=document.createElement("div");tmp.innerHTML=rSearch();const newBody=tmp.querySelector(".body");if(newBody){body.innerHTML=newBody.innerHTML;bindBodyEvents();}}
+    });
+    si.focus();si.setSelectionRange(si.value.length,si.value.length);
+  }
+  document.getElementById("search-clear")?.addEventListener("click",()=>{searchStr="";render();});
+
+  ["btn-new","fab-new"].forEach(id=>document.getElementById(id)?.addEventListener("click",()=>{view="add";form=ef();addingBrand=false;addingModel=false;render();}));
+  document.querySelectorAll(".client-card,.scad-card").forEach(el=>el.addEventListener("click",()=>{activeClientId=parseInt(el.dataset.id);view="detail";render();}));
+  bindBodyEvents();
+  bindFormEvents();
+  bindDetailEvents();
+}
+
+function bindBodyEvents(){
+  document.getElementById("btn-connect")?.addEventListener("click",connectDrive);
+  document.getElementById("btn-download")?.addEventListener("click",downloadFromDrive);
+  document.getElementById("btn-upload")?.addEventListener("click",uploadToDrive);
+  document.getElementById("btn-export")?.addEventListener("click",()=>{const blob=new Blob([JSON.stringify(DB,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`ups_backup_${new Date().toISOString().slice(0,10)}.json`;a.click();toast("✅ Esportato!");});
+  const ii=document.getElementById("import-input");
+  document.getElementById("btn-import")?.addEventListener("click",()=>ii?.click());
+  ii?.addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(!d.clients)throw 0;DB=d;save(DB);toast(`✅ Importati ${DB.clients.length} clienti!`);render();}catch{toast("❌ File non valido","err");}};r.readAsText(f);});
+  document.querySelectorAll(".client-card,.scad-card").forEach(el=>el.addEventListener("click",()=>{activeClientId=parseInt(el.dataset.id);view="detail";render();}));
+}
+
+function bindFormEvents(){
+  document.getElementById("btn-cancel")?.addEventListener("click",()=>{view=view==="edit"?"detail":"search";render();});
+  ["clientName","location","power","yearMfg","serial","reparto","voltageIn","voltageOut","battVoltage","battAh","battElements","battStrings","battInstallDate","battDurMesi","battRiInt","maintLastDate"].forEach(k=>{
+    const el=document.getElementById("f-"+k);if(!el)return;
+    el.addEventListener("input",e=>{form[k]=e.target.value;if(["battVoltage","battElements"].includes(k)){const cb=document.getElementById("calc-box");if(cb){const t=tv();cb.innerHTML=`⚡ ${t}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}`;}}}); 
+  });
+  ["brand","model","topology","configIO","maintFreq"].forEach(k=>{
+    const el=document.getElementById("f-"+k);if(!el)return;
+    el.addEventListener("change",e=>{const v=e.target.value;if(k==="brand"&&v==="__add__"){addingBrand=true;form.brand="";form.model="";render();return;}if(k==="model"&&v==="__add__"){addingModel=true;form.model="";render();return;}form[k]=v;if(k==="brand"){form.model="";addingBrand=false;addingModel=false;}render();});
+  });
+
+  // Batterie con autocompletamento
+  const fb=document.getElementById("f-battBrand");
+  if(fb)fb.addEventListener("change",e=>{form.battBrand=e.target.value;form.battModel="";form.battAh="";form.battVoltage="";form.battRiInt="";render();});
+  const fm2=document.getElementById("f-battModel");
+  if(fm2)fm2.addEventListener("change",e=>{
+    form.battModel=e.target.value;
+    const data=battData(form.battBrand,form.battModel);
+    if(data){form.battAh=String(data.ah);form.battVoltage=String(data.volt);form.battRiInt=String(data.riInt);}
+    render();
+  });
+
+  document.getElementById("f-battSplit")?.addEventListener("change",e=>{form.battSplit=e.target.checked;const cb=document.getElementById("calc-box");if(cb){const t=tv();cb.innerHTML=`⚡ ${t}${form.battElements&&form.battVoltage?`<span class="calc-note">(${form.battVoltage}V × ${form.battElements})</span>`:""}`;}});
+  ["notes","maintNotes"].forEach(k=>{document.getElementById("f-"+k)?.addEventListener("input",e=>{form[k]=e.target.value;});});
+  const nb=document.getElementById("f-newBrand");if(nb){nb.focus();nb.addEventListener("input",e=>{form.newBrand=e.target.value;});}
+  document.getElementById("btn-saveBrand")?.addEventListener("click",()=>{const n=form.newBrand.trim();if(!n)return;DB.customBrands=DB.customBrands||{};DB.customBrands[n]=[];save(DB);form.brand=n;form.newBrand="";form.model="";addingBrand=false;toast(`Marca "${n}" aggiunta!`);render();});
+  document.getElementById("btn-cancelBrand")?.addEventListener("click",()=>{addingBrand=false;form.newBrand="";render();});
+  const nm=document.getElementById("f-newModel");if(nm){nm.focus();nm.addEventListener("input",e=>{form.newModel=e.target.value;});}
+  document.getElementById("btn-saveModel")?.addEventListener("click",()=>{const n=form.newModel.trim();if(!n||!form.brand)return;DB.customBrands=DB.customBrands||{};DB.customBrands[form.brand]=[...(DB.customBrands[form.brand]||[]),n];save(DB);form.model=n;form.newModel="";addingModel=false;toast(`Modello "${n}" aggiunto!`);render();});
+  document.getElementById("btn-cancelModel")?.addEventListener("click",()=>{addingModel=false;form.newModel="";render();});
+
+  document.getElementById("btn-save")?.addEventListener("click",()=>{
+    ["notes","maintNotes"].forEach(k=>{const el=document.getElementById("f-"+k);if(el)form[k]=el.value;});
+    if(!form.brand||!form.model){toast("Marca e modello obbligatori","err");return;}
+    if(view==="add"&&!form.clientName.trim()){toast("Nome cliente obbligatorio","err");return;}
+    const origAt=view==="edit"?(DB.clients.flatMap(c=>c.ups).find(u=>u.id===editingUpsId)?.addedAt||new Date().toLocaleDateString("it-IT")):new Date().toLocaleDateString("it-IT");
+    const origHist=view==="edit"?(DB.clients.flatMap(c=>c.ups).find(u=>u.id===editingUpsId)?.history||[]):[];
+    const ups={id:view==="edit"?editingUpsId:Date.now(),brand:form.brand,model:form.model,power:form.power,topology:form.topology,configIO:form.configIO,serial:form.serial,yearMfg:form.yearMfg,voltageIn:form.voltageIn,voltageOut:form.voltageOut,reparto:form.reparto,battery:{brand:form.battBrand,model:form.battModel,voltage:form.battVoltage,ah:form.battAh,elements:form.battElements,strings:form.battStrings,installDate:form.battInstallDate,split:form.battSplit,totalVoltage:tv(),durMesi:form.battDurMesi,riInt:form.battRiInt},maint:{freq:form.maintFreq,lastDate:form.maintLastDate,notes:form.maintNotes},history:origHist,notes:form.notes,addedAt:origAt};
+    if(view==="edit"){DB.clients=DB.clients.map(c=>({...c,ups:c.ups.map(u=>u.id===editingUpsId?ups:u)}));save(DB);toast("✅ Modifiche salvate!");view="detail";}
+    else{const i=DB.clients.findIndex(c=>c.name.toLowerCase()===form.clientName.trim().toLowerCase());if(i>=0)DB.clients[i].ups.push(ups);else DB.clients.push({id:Date.now(),name:form.clientName.trim(),location:form.location,ups:[ups]});save(DB);toast("✅ Impianto salvato!");view="search";}
+    form=ef();addingBrand=false;addingModel=false;render();
+  });
+}
+
+function bindDetailEvents(){
+  document.getElementById("btn-back")?.addEventListener("click",()=>{view="search";activeClientId=null;render();});
+  document.getElementById("btn-add-ups")?.addEventListener("click",()=>{const c=DB.clients.find(x=>x.id===activeClientId);if(!c)return;form=ef();form.clientName=c.name;view="add";addingBrand=false;addingModel=false;render();});
+  document.querySelectorAll(".maint-done-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();showMaintModal(parseInt(btn.dataset.client),parseInt(btn.dataset.ups));}));
+  document.querySelectorAll(".edit-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();const upsId=parseInt(btn.dataset.ups);const ups=DB.clients.flatMap(c=>c.ups).find(u=>u.id===upsId);if(!ups)return;editingUpsId=upsId;form=ffu(ups);addingBrand=false;addingModel=false;view="edit";render();}));
+  document.querySelectorAll(".delete-btn").forEach(btn=>btn.addEventListener("click",e=>{e.stopPropagation();if(!confirm("Eliminare questo UPS?"))return;const upsId=parseInt(btn.dataset.ups),clientId=parseInt(btn.dataset.client);const ci=DB.clients.findIndex(c=>c.id===clientId);if(ci<0)return;DB.clients[ci].ups=DB.clients[ci].ups.filter(u=>u.id!==upsId);if(DB.clients[ci].ups.length===0)DB.clients.splice(ci,1);save(DB);if(!DB.clients.find(c=>c.id===clientId)){view="search";activeClientId=null;}toast("UPS eliminato");render();}));
+}
+
+render();
+</script>
+<script src="https://apis.google.com/js/api.js" onload="initGapi()"></script>
+<script src="https://accounts.google.com/gsi/client" onload="initGis()"></script>
+</body>
+</html>
